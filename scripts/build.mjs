@@ -1,11 +1,13 @@
-import { mkdir, cp, writeFile } from 'node:fs/promises';
+import { mkdir, cp, readFile, writeFile } from 'node:fs/promises';
+
+const { version } = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 for (const browser of ['chrome', 'firefox']) {
   const dest = new URL(`../dist/${browser}/`, import.meta.url);
   await mkdir(dest, { recursive: true });
   await cp(new URL('../src/', import.meta.url), dest, { recursive: true });
   const manifest = {
-    manifest_version: 3, name: 'Go Links', version: '0.1.0',
+    manifest_version: 3, name: 'Go Links', version,
     description: 'Your personal shortcuts. Map go/keys to URLs, stored locally in your browser.',
     permissions: ['storage', 'declarativeNetRequestWithHostAccess'],
     host_permissions: ['http://go/*', 'https://go/*'],

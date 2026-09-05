@@ -6,7 +6,7 @@ test('only first install opens management; rule setup still runs on updates', as
   let opened = 0;
   let updates = 0;
   globalThis.chrome = {
-    runtime: { getURL: path => `chrome-extension://test/${path}`, openOptionsPage: async () => { opened++; },
+    runtime: { onMessage: { addListener() {} }, getURL: path => `chrome-extension://test/${path}`, openOptionsPage: async () => { opened++; },
       onInstalled: { addListener: fn => { installed = fn; } }, onStartup: { addListener() {} } },
     action: { onClicked: { addListener() {} } },
     omnibox: { onInputChanged: { addListener() {} }, onInputEntered: { addListener() {} } },

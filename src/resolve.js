@@ -6,7 +6,15 @@ async function resolve() {
   if (!raw) { location.replace(api.runtime.getURL('options.html')); return; }
   const key = normalizeKey(raw);
   const links = await readLinks();
-  if (Object.hasOwn(links, key)) { location.replace(validateURL(links[key])); return; }
+  if (Object.hasOwn(links, key)) {
+    const url = validateURL(links[key]);
+    try {
+      const result = await api.runtime.sendMessage({ type: 'record-use', key });
+      if (result?.error) console.error('Could not record usage:', result.error);
+    } catch (error) { console.error('Could not record usage:', error); }
+    location.replace(url);
+    return;
+  }
   document.querySelector('#title').textContent = `go/${key} is available`;
   document.querySelector('#message').textContent = 'This shortcut has no destination yet. Add one to make it yours.';
   const manage = document.querySelector('#manage');

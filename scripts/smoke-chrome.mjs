@@ -63,6 +63,21 @@ try {
   await page.locator('#import-file').setInputFiles({ name: 'links.json', mimeType: 'application/json', buffer: Buffer.from('{"calendar":"https://example.org/calendar"}') });
   await page.locator('#import-confirm').click();
   await page.getByRole('link', { name: 'go/calendar', exact: true }).waitFor();
+  await page.getByText('2 uses', { exact: true }).waitFor();
+  await page.getByText('0 uses', { exact: true }).waitFor();
+  await page.locator('#sort').selectOption('most');
+  assert.equal(await page.locator('.link-info a').first().textContent(), 'go/docs');
+  await page.locator('#sort').selectOption('least');
+  assert.equal(await page.locator('.link-info a').first().textContent(), 'go/calendar');
+  const popupEvent = context.waitForEvent('page');
+  await page.getByRole('link', { name: 'go/docs', exact: true }).click();
+  const popup = await popupEvent;
+  await popup.waitForURL('https://example.com/updated?q=1#section');
+  await popup.close();
+  await page.getByText('3 uses', { exact: true }).waitFor();
+  await page.reload();
+  await page.getByText('3 uses', { exact: true }).waitFor();
+  await page.screenshot({ path: process.env.SCREENSHOT_PATH || 'docs/editor.png', fullPage: true });
   const downloadEvent = page.waitForEvent('download'); await page.locator('#export').click();
   const download = await downloadEvent;
   const { readFile } = await import('node:fs/promises');
@@ -72,6 +87,7 @@ try {
   await page.getByText('Deleted go/docs.').waitFor();
   await page.reload(); assert.equal(await page.getByRole('link', { name: 'go/docs', exact: true }).count(), 0);
   assert.equal(await page.getByRole('link', { name: 'go/calendar', exact: true }).count(), 1);
+  assert.equal(await page.evaluate(() => chrome.storage.local.get('usage:docs').then(data => Object.hasOwn(data, 'usage:docs'))), false);
   assert.deepEqual(errors, []);
   console.log('Chrome smoke passed: first-install ready state, host access withheld and restored through browser settings, editor, HTTP/HTTPS redirects, missing key, duplicate, import/export, delete, reload.');
 } finally { await context.close(); await rm(profile, { recursive: true, force: true }); }

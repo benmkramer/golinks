@@ -74,6 +74,9 @@ try {
   await driver.wait(until.elementTextContains(driver.findElement(By.id('title')), 'go/missing is available'), 10000);
   await driver.findElement(By.id('manage')).click();
   assert.equal(await driver.findElement(By.id('key')).getProperty('value'), 'missing');
+  await driver.wait(until.elementLocated(By.className('use-count')), 10000);
+  assert.equal(await driver.findElement(By.className('use-count')).getText(), '2 uses');
+  const managerURL = await driver.getCurrentUrl();
   // Exercise the native address bar, not WebDriver URL navigation.
   await driver.setContext('chrome');
   await driver.executeScript("Services.prefs.setBoolPref('browser.fixup.domainwhitelist.go', true);");
@@ -82,5 +85,8 @@ try {
   await addressBar.sendKeys('go/docs', Key.ENTER);
   await driver.setContext('content');
   await driver.wait(until.urlIs(destination), 10000);
+  await driver.get(managerURL);
+  await driver.wait(until.elementLocated(By.className('use-count')), 10000);
+  assert.equal(await driver.findElement(By.className('use-count')).getText(), '3 uses');
   console.log('Firefox smoke passed: first-install ready state, revocation, editing without access, native permission denial and approval, restored redirects, missing-key creation, native go/docs address-bar navigation.');
 } finally { if (driver) await driver.quit(); server.close(); }

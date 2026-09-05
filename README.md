@@ -33,6 +33,8 @@ Keys are case-insensitive, 1–64 characters, and use letters, numbers, hyphens 
 
 The extension cannot override the browser's choice to search instead of navigate. It only intercepts main-frame navigation to the exact `go` hostname on standard HTTP/HTTPS ports. It does not change your search engine, DNS or operating system configuration.
 
+Each shortcut shows its usage count. Choose **Most used** or **Least used** to find favorites or cleanup candidates. Opening a saved shortcut through a go URL, keyword mode, or the manager counts once when the extension sends you to its destination, even if the destination later fails to load. Unknown keys and searches do not count. Existing links start at zero with this update; earlier visits cannot be recovered.
+
 ## Data and backups
 
 Mappings stay in this browser profile's extension storage. Chrome and Firefox have separate stores; there is no automatic cross-browser sync or account. Export JSON from one browser and import it in the other:
@@ -43,6 +45,8 @@ Mappings stay in this browser profile's extension storage. Chrome and Firefox ha
   "calendar": "https://calendar.google.com/"
 }
 ```
+
+Usage counts stay local and are not included in JSON exports. Editing or importing over an existing key preserves its count. Deleting a shortcut removes its count, so recreating it starts at zero.
 
 Imports validate the complete file, preview additions and replacements, and ask before writing. Imported keys replace matching keys; unrelated mappings remain. Export before uninstalling, since uninstalling an extension removes its data.
 

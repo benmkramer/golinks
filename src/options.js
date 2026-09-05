@@ -1,4 +1,4 @@
-import { api, readLinks, saveLinks, deleteLink } from './store.js';
+import { api, readLinks, saveLinks, readUsage } from './store.js';
 import { normalizeKey, validateURL, parseImport } from './core.js';
 import { setupPermissions } from './permissions.js';
 
@@ -9,6 +9,7 @@ setupPermissions(api.permissions, {
   message: $('#permission-status'), ready: $('#permission-ready')
 });
 let links = {};
+let usage = {};
 let editing = null;
 let pendingImport = null;
 let pendingDelete = null;
@@ -21,9 +22,14 @@ function resetForm() {
   $('#form-title').textContent = 'Create a shortcut';
   $('#save').textContent = 'Add shortcut';
 }
+function useCount(key) { return Object.hasOwn(usage, key) ? usage[key] : 0; }
 function render() {
   const query = $('#search').value.trim().toLowerCase();
-  const entries = Object.entries(links).sort(([a], [b]) => a.localeCompare(b));
+  const entries = Object.entries(links).sort(([a], [b]) => {
+    const difference = useCount(a) - useCount(b);
+    const order = $('#sort').value;
+    return (order === 'least' ? difference : order === 'most' ? -difference : 0) || a.localeCompare(b);
+  });
   $('#count').textContent = entries.length;
   const filtered = entries.filter(([key, url]) => `${key} ${url}`.toLowerCase().includes(query));
   $('#links').replaceChildren();
@@ -43,7 +49,10 @@ function render() {
     const anchor = document.createElement('a'); anchor.textContent = `go/${key}`;
     anchor.href = api.runtime.getURL(`resolve.html#${encodeURIComponent(key)}`); anchor.target = '_blank'; anchor.rel = 'noopener noreferrer';
     const destination = document.createElement('p'); destination.textContent = url; destination.title = url;
-    info.append(anchor, destination);
+    const uses = document.createElement('span'); uses.className = 'use-count';
+    const count = useCount(key);
+    uses.textContent = `${count.toLocaleString()} ${count === 1 ? 'use' : 'uses'}`;
+    info.append(anchor, destination, uses);
     const actions = document.createElement('div'); actions.className = 'row-actions';
     for (const label of ['Edit', 'Delete']) {
       const button = document.createElement('button'); button.className = 'text-button'; button.textContent = label;
@@ -61,7 +70,7 @@ function render() {
     row.append(info, actions); $('#links').append(row);
   }
 }
-async function refresh() { links = await readLinks(); render(); }
+async function refresh() { [links, usage] = await Promise.all([readLinks(), readUsage()]); render(); }
 $('#link-form').addEventListener('submit', async event => {
   event.preventDefault(); $('#save').disabled = true;
   try {
@@ -74,10 +83,16 @@ $('#link-form').addEventListener('submit', async event => {
 });
 $('#cancel').addEventListener('click', resetForm);
 $('#search').addEventListener('input', render);
+$('#sort').addEventListener('change', render);
 $('#delete-cancel').addEventListener('click', () => $('#delete-dialog').close());
 $('#delete-confirm').addEventListener('click', async () => {
   $('#delete-confirm').disabled = true;
-  try { await deleteLink(pendingDelete); if (editing === pendingDelete) resetForm(); await refresh(); status(`Deleted go/${pendingDelete}.`); $('#delete-dialog').close(); }
+  try {
+    const result = await api.runtime.sendMessage({ type: 'delete-link', key: pendingDelete });
+    if (!result?.ok) throw new Error(result?.error || 'Could not delete shortcut.');
+    if (editing === pendingDelete) resetForm();
+    await refresh(); status(`Deleted go/${pendingDelete}.`); $('#delete-dialog').close();
+  }
   catch (error) { $('#delete-dialog').close(); status(error.message, true); }
   finally { $('#delete-confirm').disabled = false; }
 });

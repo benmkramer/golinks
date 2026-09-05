@@ -14,10 +14,11 @@ Firefox manifest validation: `npx web-ext@10.6.0 lint --source-dir dist/firefox`
 
 ## Verified on September 5, 2026
 
-- All 17 Node tests passed; both builds generated successfully.
+- All 18 Node tests passed; both builds generated successfully. Usage tests cover simultaneous increments, missing keys, edit/import preservation, deletion and recreation, and recovery after a storage write fails.
 - Chrome for Testing 151: first-install management page, already-granted readiness, withheld access, external revocation/restoration, and the existing editor, redirect, import/export, deletion, and page-reload persistence checks passed. Firefox-only guidance was hidden.
 - Firefox 155.0.1: first-install management page, already-granted readiness, revocation, editing while access was missing, actual permission-prompt denial/retry/approval, restored HTTP/HTTPS redirects, unknown-key prefill, and native address-bar typing of `go/docs` with the hostname preference passed. Firefox guidance was visible.
 - Firefox add-on lint: 0 errors, 0 warnings, 0 notices.
+- Usage tracking passed in both browsers: HTTP/HTTPS visits persist counts, and Firefox native address-bar navigation increments the count. Chrome additionally verified zero-use rows, most/least-used sorting, manager-click counting, live updates, reload persistence, and counter deletion. The updated manager was visually inspected.
 - The Chrome permission-setup panel with an existing mapping was visually inspected.
 
 Both fresh test profiles initially granted the declared hosts. The tests explicitly revoked those real grants to exercise the missing-access path; these results do not imply that every installation grants them. Browser approval dialogs were not manually exercised in a normal user profile. No manifest host patterns or API permissions were added.

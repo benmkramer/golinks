@@ -19,7 +19,8 @@
     </form>
   </section>
   <p id="status" role="status" aria-live="polite"></p>
-  <section aria-labelledby="list-title"><div class="list-heading"><h2 id="list-title">Your links <span id="count" class="count">0</span></h2><input id="search" type="search" aria-label="Search shortcuts" placeholder="Find a shortcut…"></div>
+  <section aria-labelledby="list-title"><div class="list-heading"><h2 id="list-title">Your links <span id="count" class="count">0</span></h2><div class="list-controls"><input id="search" type="search" aria-label="Search shortcuts" placeholder="Find a shortcut…"><select id="sort" aria-label="Sort shortcuts"><option value="name">Name A–Z</option><option value="most">Most used</option><option value="least">Least used</option></select></div></div>
+  <p class="tracking-note">Uses are counted in this browser from this update onward. Sort by least used to find cleanup candidates.</p>
   <div id="links" class="card link-list"></div></section>
   <aside class="usage"><strong>Open a shortcut.</strong><p>Try <code>go/docs</code> in the address bar. Redirect permissions do not determine whether your browser treats this as a URL or a search.</p>
   <details id="firefox-setup" hidden open><summary>Firefox: enable go/ once</summary><p>If Firefox searches for your shortcut, make this one-time change:</p><ol><li>Type <code>about:config</code> in the address bar and continue past the warning.</li><li>Search for <code>browser.fixup.domainwhitelist.go</code>.</li><li>Select <strong>Boolean</strong>, click <strong>+</strong>, and ensure the value is <strong>true</strong>.</li></ol><p>Now type <code>go/docs</code> directly. This setting applies only to the <code>go</code> hostname. Firefox requires you to change it manually; the extension cannot set it.</p></details>

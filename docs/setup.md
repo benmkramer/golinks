@@ -27,8 +27,9 @@ This creates `dist/chrome` and `dist/firefox`. No `npm install`, account, DNS co
 3. Click **Load unpacked**.
 4. Select the project's **`dist/chrome` folder**, not the repository root or an individual file.
 5. Confirm **Go Links** appears and is enabled.
-6. Open the puzzle-piece **Extensions** menu and pin **Go Links**. Click its toolbar button to open the editor.
-7. Add shortcut **`docs`** with destination **`https://example.com/`**, then click **Add shortcut**.
+6. The management page opens on first installation. If it is closed, open it from **Go Links** in the puzzle-piece **Extensions** menu. Pin Go Links for quick access.
+7. Check the permission status. If the setup panel appears, click **Enable Go Links** and approve access to `http://go/*` and `https://go/*`. If Chrome already granted access at installation, the page shows **Redirect permissions enabled** without requesting it again.
+8. Add shortcut **`docs`** with destination **`https://example.com/`**, then click **Add shortcut**.
 
 The unpacked extension stays installed across Chrome restarts as long as its files remain available and Chrome keeps it enabled. See Google's [local extension testing instructions](https://support.google.com/chrome/a/answer/2714278).
 
@@ -49,10 +50,13 @@ Chrome does not expose Firefox's `browser.fixup.domainwhitelist.go` preference. 
 2. Click **Load Temporary Add-on**.
 3. Select **`dist/firefox/manifest.json`** from this project.
 4. Confirm **Go Links** appears under **Temporary Extensions**.
-5. Open the puzzle-piece **Extensions** menu and click **Go Links** to open the editor. You can pin it to the toolbar from that menu.
-6. Add shortcut **`docs`** with destination **`https://example.com/`**, then click **Add shortcut**.
+5. The management page opens on first installation. If it is closed, open the puzzle-piece **Extensions** menu and click **Go Links**. You can pin it to the toolbar from that menu.
+6. If the setup panel appears, click **Enable Go Links**, then approve the browser's request for access to `http://go/*` and `https://go/*`. Wait for **Redirect permissions enabled**. If both hosts are already granted, no permission request is needed.
+7. Add shortcut **`docs`** with destination **`https://example.com/`**, then click **Add shortcut**.
 
-**No permission popup is expected for a temporary installation.** Firefox skips installation-time permission prompts in this mode. If you previously revoked host access, open `about:addons` → **Go Links** → **Permissions** and enable the requested access to the `go` sites. See Mozilla's [temporary installation guide](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/).
+**A missing installation popup does not establish permission readiness.** Firefox skips installation-time permission prompts for temporary add-ons, and declared host permissions can be withheld or revoked. The management page checks the actual grants, rather than assuming installation provided them. See Mozilla's [temporary installation guide](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/) and [host permission behavior](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/host_permissions).
+
+If you deny the request, the setup panel stays visible with a retry button. Browser errors are shown there too. Saved mappings and editing remain available. Changes made through the browser's extension permission settings update the open page automatically. **Redirect permissions enabled** only confirms access to the two hosts; it does not mean literal `go/docs` input has been verified. Complete the address-bar setup below separately.
 
 ### Firefox: make go/docs navigate instead of search
 
@@ -99,7 +103,7 @@ Use the same browser profile where you installed the extension. Chrome and Firef
 | --- | --- |
 | `go/docs` opens search results | This is the browser's search/navigation decision. Follow the Chrome or Firefox direct-typing steps above. |
 | `http://go/docs` works, but `go/docs` searches | The extension and mapping work. Finish the browser-specific direct-typing setup. |
-| `http://go/` produces a DNS/network error | Confirm the extension is loaded, enabled, and permitted to access the `go` hosts. In Chrome, check **Go Links → Details → Site access** and permit automatic access on its requested sites rather than only on click. In Firefox, check the add-on's **Permissions** tab. |
+| `http://go/` produces a DNS/network error | Open the editor from the extension's toolbar button and use **Enable Go Links** if shown. If access is blocked by browser settings, check Chrome's **Go Links → Details → Site access** or Firefox's add-on **Permissions** tab. |
 | The shortcut has no destination | Add its mapping in this browser's editor, or import your JSON backup. |
 | Firefox stops working after restart | Reload the temporary add-on or install a signed permanent version. The `about:config` preference alone does not provide redirects. |
 | Loading fails because `manifest.json` is missing | Run `npm run build`. Select `dist/chrome` in Chrome or `dist/firefox/manifest.json` in Firefox. |

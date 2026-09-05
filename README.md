@@ -21,6 +21,8 @@ No `npm install` is needed to build or use the extension. Dependencies are only 
 
 **[Complete setup guide](docs/setup.md):** step-by-step installation, your first shortcut, direct `go/...` typing, permissions, updates, troubleshooting, and permanent Firefox installation. Firefox's temporary install must be loaded again after a browser restart.
 
+The management page opens on first installation and checks actual access to both `go` hosts. If access is missing, click **Enable Go Links** and approve the browser prompt. When it says **Redirect permissions enabled**, host access is ready; address-bar setup remains a separate step. You can manage mappings even before granting access.
+
 ## Use
 
 1. Add `docs` → `https://example.com/docs` in the editor.

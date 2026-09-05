@@ -13,9 +13,19 @@ const context = await chromium.launchPersistentContext(profile, {
 try {
   const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
   const id = new URL(worker.url()).host;
-  const page = await context.newPage();
+  let page;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    page = context.pages().find(candidate => candidate.url() === `chrome-extension://${id}/options.html`);
+    if (page) break;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert.ok(page, 'first install opens the management page');
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto(`chrome-extension://${id}/options.html`);
+  await page.locator('#permission-ready').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#permission-ready').textContent(), 'Redirect permissions enabled');
+  assert.equal(await page.locator('#permission-setup').isVisible(), false);
+  assert.equal(await page.locator('#firefox-setup').isVisible(), false);
   await page.locator('#key').fill('Docs');
   await page.locator('#url').fill('https://example.com/docs?q=1#section');
   await page.locator('#save').click();
@@ -24,7 +34,19 @@ try {
   await page.locator('#url').fill('https://example.com/updated?q=1#section');
   await page.locator('#save').click();
   await page.getByText('https://example.com/updated?q=1#section', { exact: true }).waitFor();
-  await page.screenshot({ path: 'docs/editor.png', fullPage: true });
+  await page.screenshot({ path: process.env.SCREENSHOT_PATH || 'docs/editor.png', fullPage: true });
+  // Use the same browser API as chrome://extensions, only in this test profile.
+  const settings = await context.newPage();
+  await settings.goto('chrome://extensions');
+  await settings.evaluate(id => chrome.developerPrivate.updateExtensionConfiguration({ extensionId: id, hostAccess: 'ON_CLICK' }), id);
+  await page.locator('#permission-setup').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#permission-ready').isVisible(), false);
+  assert.equal(await page.locator('#save').isEnabled(), true);
+  assert.equal(await page.getByRole('link', { name: 'go/docs', exact: true }).count(), 1);
+  await page.screenshot({ path: '/tmp/golinks-permission-missing.png', fullPage: true });
+  await settings.evaluate(id => chrome.developerPrivate.updateExtensionConfiguration({ extensionId: id, hostAccess: 'ON_ALL_SITES' }), id);
+  await page.locator('#permission-ready').waitFor({ state: 'visible' });
+  await settings.close();
   // Fulfill the destination locally; the extension's real redirect still runs.
   await context.route('https://example.com/**', route => route.fulfill({ body: '<h1>Destination</h1>', contentType: 'text/html' }));
   for (const url of ['http://go/docs', 'https://go/DOCS']) {
@@ -51,5 +73,5 @@ try {
   await page.reload(); assert.equal(await page.getByRole('link', { name: 'go/docs', exact: true }).count(), 0);
   assert.equal(await page.getByRole('link', { name: 'go/calendar', exact: true }).count(), 1);
   assert.deepEqual(errors, []);
-  console.log('Chrome smoke passed: editor, HTTP/HTTPS redirects, missing key, duplicate, import/export, delete, reload.');
+  console.log('Chrome smoke passed: first-install ready state, host access withheld and restored through browser settings, editor, HTTP/HTTPS redirects, missing key, duplicate, import/export, delete, reload.');
 } finally { await context.close(); await rm(profile, { recursive: true, force: true }); }

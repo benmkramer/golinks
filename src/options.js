@@ -1,8 +1,13 @@
 import { api, readLinks, saveLinks, deleteLink } from './store.js';
 import { normalizeKey, validateURL, parseImport } from './core.js';
+import { setupPermissions } from './permissions.js';
 
 const $ = selector => document.querySelector(selector);
 $('#firefox-setup').hidden = !api.runtime.getURL('').startsWith('moz-extension:');
+setupPermissions(api.permissions, {
+  panel: $('#permission-setup'), button: $('#enable-permissions'),
+  message: $('#permission-status'), ready: $('#permission-ready')
+});
 let links = {};
 let editing = null;
 let pendingImport = null;
@@ -107,6 +112,5 @@ $('#import-confirm').addEventListener('click', async () => {
 });
 api.storage.onChanged.addListener((_changes, area) => { if (area === 'local') refresh().catch(error => status(error.message, true)); });
 refresh().catch(error => status(error.message, true));
-api.permissions.contains({ origins: ['http://go/*', 'https://go/*'] }).then(granted => { $('#permission-help').hidden = granted; }).catch(console.error);
 const requestedKey = new URLSearchParams(location.search).get('key');
 if (requestedKey) { try { $('#key').value = normalizeKey(requestedKey); $('#url').focus(); } catch { /* Leave invalid prefill empty. */ } }

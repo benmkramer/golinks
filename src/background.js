@@ -4,7 +4,10 @@ import { normalizeKey, escapeXML, redirectRule } from './core.js';
 async function setup() {
   await api.declarativeNetRequest.updateDynamicRules({ removeRuleIds: [1], addRules: [redirectRule(api.runtime.getURL(''))] });
 }
-api.runtime.onInstalled.addListener(() => { setup().catch(console.error); });
+api.runtime.onInstalled.addListener(details => {
+  setup().catch(console.error);
+  if (details.reason === 'install') api.runtime.openOptionsPage().catch(console.error);
+});
 api.runtime.onStartup.addListener(() => { setup().catch(console.error); });
 api.action.onClicked.addListener(() => { api.runtime.openOptionsPage().catch(console.error); });
 

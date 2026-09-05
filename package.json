@@ -1,0 +1,17 @@
+{
+  "name": "personal-go-links",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test",
+    "check": "npm test && npm run build",
+    "smoke:chrome": "npm run build && node scripts/smoke-chrome.mjs",
+    "smoke:firefox": "npm run build && node scripts/smoke-firefox.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "selenium-webdriver": "^4.48.0"
+  }
+}

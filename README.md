@@ -2,31 +2,30 @@
 
 A small, local-only Chrome and Firefox extension. Save a key and a URL, then open `go/key` from your address bar.
 
-## Install locally
+## Setup
 
-Run `npm run build` with Node.js 20 or newer. The extension itself has no runtime dependencies.
+Requires Node.js 20+, Git, and Chrome 120+ or Firefox 142+. Build both extensions:
 
-**Chrome:** Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `dist/chrome` from this project.
+```sh
+git clone https://github.com/benmkramer/golinks.git
+cd golinks
+npm run build
+```
 
-**Firefox:** Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `dist/firefox/manifest.json`. Temporary installation skips permission prompts. Temporary add-ons are removed when Firefox restarts. A permanent installation in standard Firefox requires signing through Mozilla. If access has been revoked, allow `http://go/*` and `https://go/*` in the add-on's Permissions tab.
+No `npm install` is needed to build or use the extension. Dependencies are only for development and testing.
 
-### Firefox: enable direct go/ typing once
+| Browser | Load the extension | Enable direct `go/docs` typing |
+| --- | --- | --- |
+| Chrome | `chrome://extensions` → **Developer mode** → **Load unpacked** → select `dist/chrome` | Try `go/docs`. If Chrome searches, [visit the go host once and retry](docs/setup.md#chrome-make-godocs-navigate-instead-of-search). |
+| Firefox | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on** → select `dist/firefox/manifest.json` | In `about:config`, create Boolean `browser.fixup.domainwhitelist.go` and set it to **true**. |
 
-If Firefox searches for `go/docs`, tell it that `go` is a hostname:
-
-1. Open `about:config` and continue past the warning.
-2. Search for `browser.fixup.domainwhitelist.go`.
-3. Select **Boolean**, click **+**, and ensure its value is **true**. If the setting already exists, toggle it to **true**.
-
-Now enter `go/docs` directly, without a scheme or extra space. This preference applies only to the `go` hostname and persists across restarts. Standard extensions cannot change this preference; it requires this one-time manual setup. To undo it, delete the preference or set it to **false**. Firefox's [URL-fixup implementation](https://searchfox.org/firefox-main/source/docshell/base/URIFixup.sys.mjs) reads this hostname allowlist.
-
-Click the extension's toolbar button to manage shortcuts. Pin it for quick access.
+**[Complete setup guide](docs/setup.md):** step-by-step installation, your first shortcut, direct `go/...` typing, permissions, updates, troubleshooting, and permanent Firefox installation. Firefox's temporary install must be loaded again after a browser restart.
 
 ## Use
 
 1. Add `docs` → `https://example.com/docs` in the editor.
 2. Type `go/docs` into the address bar and press Enter.
-3. In Firefox, complete the one-time setup above if it searches instead. Alternatively, type `go`, then Space (or Tab in Chrome), then `docs` and Enter. The keyword mode also suggests saved keys.
+3. Follow your browser's [direct typing setup](docs/setup.md) if it searches instead. Alternatively, type `go`, then Space (or Tab in Chrome), then `docs` and Enter. The keyword mode also suggests saved keys.
 
 Keys are case-insensitive, 1–64 characters, and use letters, numbers, hyphens or underscores. A key must start with a letter or number. Destinations accept HTTP and HTTPS, including query strings and fragments. `go/` opens the editor, and an unknown key offers to create a mapping. Extra query strings or fragments on the shortcut are not forwarded to its destination.
 
